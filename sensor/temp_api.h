@@ -9,7 +9,7 @@
 //Структура типа: dddd - год 4 цифры mm - месяц 2 символа dd - день 2 цифры hh - часы 2 цифры
 //mm - минуты 2 цифры temperature - целое число от -99 до 99
 #pragma pack(push, 1)
-struct sensor
+typedef struct sensor
 {
     uint16_t year;  //год
     uint8_t month;  //месяц
@@ -17,8 +17,18 @@ struct sensor
     uint8_t hour;   //час
     uint8_t minute; //минуты
     int8_t t;       //температура 
-};
+} sensor;
 #pragma pack(pop)
+
+//тут буду делать stack
+typedef struct list 
+{
+ sensor value;
+ struct list * next;
+} stack;
+
+//добавление в stack
+void push(stack **p,sensor data);
 
 //записать данные 1 раз
 void AddRecord(struct sensor info[],int number,uint16_t year,uint8_t month,uint8_t day,uint8_t hour,uint8_t minute,int8_t t);
@@ -26,11 +36,11 @@ void AddRecord(struct sensor info[],int number,uint16_t year,uint8_t month,uint8
 //инициализация
 void InitInfo(struct sensor info[], int n);
 
-//записать данные из простого файла
-int AddInfoFromFileSimple(struct sensor info[], int start);
+// записать данные из файла в stack
+int AddInfoFromFileInStack(stack **p, const char *filename);
 
-//записать данные из файла
-int AddInfoFromFile(struct sensor info[], int start, const char *file);
+// печать stack 
+void printStack(stack *p);
 
 //печать
 void print(struct sensor *info, int count);

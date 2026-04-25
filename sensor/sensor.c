@@ -36,10 +36,11 @@ int main(int argc, char *argv[])
             //printf("found argument \"m = %s\".\n", optarg);
             month = atoi(optarg); 
             if(month > 0 && month <= 12)
-                {}
+                {
+                    monthFlag = 1;
+                }
             else
                 printf("Error: Month must be between 1 and 12, got '%s'\n", optarg);
-            monthFlag = 1;
             break;
         case '?':
             printf("Error found! Use -h for help.\n");
@@ -48,20 +49,28 @@ int main(int argc, char *argv[])
     }
 
 //структура (объявление и инициализация 0)
-    struct sensor info[SIZE];
+    /*
+    sensor info[SIZE];
     InitInfo(info, SIZE);
-    int sizeInput = 0;
+    */
+   int sizeInput = 0;
+//stack
+    stack *p=NULL;
+
 
 //получение данных из файла
-    sizeInput = AddInfoFromFile(info, sizeInput, filename);
-    //printf("%d\n",sizeInput);
+    //sizeInput = AddInfoFromFile(info, sizeInput, filename);    
+    sizeInput = AddInfoFromFileInStack(&p,filename);
+    printf("size %d p=%d\n",sizeInput,p);
     //print(info, sizeInput);
+    printStack(p);
     
 //место проб и ошибок
     //SortByT(info, sizeInput); 
     //SortByDate(info, sizeInput);    
     //print(info, sizeInput);
 
+/*
 //основной вывод статистики
     if(!monthFlag)
     {
@@ -80,6 +89,6 @@ int main(int argc, char *argv[])
         printf("___________________________________________\n");
     }
 
-
+*/
     return 0;
 }

@@ -18,15 +18,33 @@ struct sensor
 };
 */
 
-// записать данные 1 раз
-void AddRecord(struct sensor info[], int number, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, int8_t t)
+// функции дял таботы со stack
+// добавление в stack
+void push(stack **p, sensor data)
 {
-    info[number].year = year;
-    info[number].month = month;
-    info[number].day = day;
-    info[number].hour = hour;
-    info[number].minute = minute;
-    info[number].t = t;
+    stack *ptmp;
+    ptmp = malloc(sizeof(stack));
+    ptmp->value = data;
+    ptmp->next = *p;
+    *p = ptmp;
+}
+
+_Bool empty_stack(stack *p)
+{
+    return p == NULL;
+}
+
+sensor pop(stack **p)
+{
+    stack *ptmp = *p;
+    sensor c;
+    if (empty_stack(*p))
+        // Попытка взять из пустого стека
+        exit(1);
+    c = ptmp->value;
+    *p = ptmp->next;
+    free(ptmp);
+    return c;
 }
 
 // записать данные 1 раз d 1 структуру
@@ -40,47 +58,10 @@ void AddRecord_1str(struct sensor *info, uint16_t year, uint8_t month, uint8_t d
     info->t = t;
 }
 
-// инициализация
-void InitInfo(struct sensor info[], int n)
+
+// записать данные из файла в stack
+int AddInfoFromFileInStack(stack **p, const char *filename)
 {
-    for (int i = 0; i < n; i++)
-    {
-        AddRecord(info, i, 0, 0, 0, 0, 0, 0);
-    }
-}
-
-// записать данные из простого файла
-int AddInfoFromFileSimple(struct sensor info[], int start)
-{
-    struct sensor *ptr = info;
-
-    FILE *file = fopen("SimpleData.txt", "r");
-    if (file == NULL)
-    {
-        printf("Error open file\n");
-        return -1;
-    }
-    int i = start;
-    for (; i < SIZE; i++)
-    {
-        if (fscanf(file, "%hu %hhu %hhu %hhu %hhu %hhd",
-                   &info[i].year,
-                   &info[i].month,
-                   &info[i].day,
-                   &info[i].hour,
-                   &info[i].minute,
-                   &info[i].t) != 6)
-            break;
-    }
-    return (info + i) - ptr;
-}
-
-// записать данные из файла
-int AddInfoFromFile(struct sensor info[], int start, const char *filename)
-{
-    struct sensor *ptr = info;
-
-    // FILE *file = fopen("temperature_small.csv", "r");
     FILE *file = fopen(filename, "r");
     if (file == NULL)
     {
@@ -88,20 +69,20 @@ int AddInfoFromFile(struct sensor info[], int start, const char *filename)
         return -1;
     }
 
-    int i = start;
+    sensor info;
     int line_number = 1;
     char line[256];
     int scanned;
 
-    while (fgets(line, sizeof(line), file) && i < SIZE)
+    while (fgets(line, sizeof(line), file))
     {
         scanned = sscanf(line, "%hu;%hhu;%hhu;%hhu;%hhu;%hhd",
-                         &info[i].year,
-                         &info[i].month,
-                         &info[i].day,
-                         &info[i].hour,
-                         &info[i].minute,
-                         &info[i].t);
+                         &info.year,
+                         &info.month,
+                         &info.day,
+                         &info.hour,
+                         &info.minute,
+                         &info.t);
 
         if (scanned != 6)
         {
@@ -110,16 +91,34 @@ int AddInfoFromFile(struct sensor info[], int start, const char *filename)
             line_number++;
             continue;
         }
-
+        push(p,info);
         line_number++;
-        i++;
     }
-
     fclose(file);
-    return (info + i) - ptr;
+    return line_number-1;
 }
 
-// печать
+// печать stack 
+void printStack(stack *p)
+{
+    sensor info;
+    printf("------------------------------------------------\n");
+    //printf("p=%d",p);
+    while(p != NULL)
+    {
+        info = pop(&p);
+        printf("%04u-%02u-%02u %02u:%02u t=%3d\n",
+               info.year,
+               info.month,
+               info.day,
+               info.hour,
+               info.minute,
+               info.t);
+    }
+    printf("------------------------------------------------\n");
+}
+
+// печать 
 void print(struct sensor *info, int count)
 {
     printf("------------------------------------------------\n");
@@ -270,36 +269,36 @@ int MaxYearTemp(struct sensor info[], int year)
     return temp.year ? temp.t : 99;
 }
 
-//замена
-void changeIJ(struct sensor info[],int i, int j)
+// замена
+void changeIJ(struct sensor info[], int i, int j)
 {
-struct sensor temp;
-    temp=info[i];
-    info[i]=info[j];
-    info[j]=temp;
+    struct sensor temp;
+    temp = info[i];
+    info[i] = info[j];
+    info[j] = temp;
 }
 
-//сортировка по температуре
-void SortByT(struct sensor info[],int n)
+// сортировка по температуре
+void SortByT(struct sensor info[], int n)
 {
     for (int i = 0; i < n; i++)
     {
         for (int j = i; j < n; j++)
         {
-            if (info[i].t>=info[j].t)
+            if (info[i].t >= info[j].t)
             {
-                changeIJ(info,i,j);
+                changeIJ(info, i, j);
             }
         }
     }
 }
 
-//сравнение даты и времени
-int Compare(const void* pa,const void* pb)
+// сравнение даты и времени
+int Compare(const void *pa, const void *pb)
 {
-    struct sensor* a = (struct sensor*) pa;
-    struct sensor* b = (struct sensor*) pb;
-    if(a->year != b->year)
+    struct sensor *a = (struct sensor *)pa;
+    struct sensor *b = (struct sensor *)pb;
+    if (a->year != b->year)
         return a->year - b->year;
     else if (a->month != b->month)
         return a->month - b->month;
@@ -311,16 +310,16 @@ int Compare(const void* pa,const void* pb)
         return a->minute - b->minute;
 }
 
-//сортировка по дате
-void SortByDate(struct sensor info[],int n)
+// сортировка по дате
+void SortByDate(struct sensor info[], int n)
 {
     for (int i = 0; i < n; i++)
     {
         for (int j = i; j < n; j++)
         {
-            if (Compare(info+i,info+j)>0)
+            if (Compare(info + i, info + j) > 0)
             {
-                changeIJ(info,i,j);
+                changeIJ(info, i, j);
             }
         }
     }
