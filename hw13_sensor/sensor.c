@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
             printf("               If -f is not specified, default file\n");
             printf("               'temperature_small.csv' will be used\n");
             printf("  -m <month>   Output of statistics for one month\n");
+            return 0;
             break;
         case 'f':
             //printf("found argument \"f = %s\".\n", optarg);
