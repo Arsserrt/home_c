@@ -39,35 +39,41 @@ void InitInfo(struct sensor info[], int n);
 // записать данные из файла в stack
 int AddInfoFromFileInStack(stack **p, const char *filename);
 
-// печать stack 
+// печать stack с удалением 
+void printStackDel(stack **p);
+
+// очистка stack 
+void cleanStack(stack **p);
+
+// печать stack без удаления
 void printStack(stack *p);
 
 //печать
 void print(struct sensor *info, int count);
 
 //функция среднемесячная температура
-float AverMonthTemp (struct sensor info[], int month, int year);
+float AverMonthTemp (stack *p, int month, int year);
 
 //функция минимальной температуры в текущем месяце
-int MinMonthTemp (struct sensor info[], int month, int year);
+int MinMonthTemp (stack *p, int month, int year);
 
 //функция максимальной температуры в текущем месяце
-int MaxMonthTemp (struct sensor info[], int month, int year);
+int MaxMonthTemp (stack *p, int month, int year);
 
 //функция годовая статистика
-void YearStats (struct sensor info[], int year);
+void YearStats (stack *p, int year);
 
 // функция статистики одного месяца
-void MonthStats(struct sensor info[], int month, int year);
+void MonthStats(stack *p, int month, int year);
 
 //функция среднегодовая температура
-float AverYearTemp (struct sensor info[], int year);
+float AverYearTemp (stack *p, int year);
 
 //функция минимальная температура за год
-int MinYearTemp (struct sensor info[], int year);
+int MinYearTemp (stack *p, int year);
 
 //функция максимальная температура за год
-int MaxYearTemp (struct sensor info[], int year);
+int MaxYearTemp (stack *p, int year);
 
 //сортировки
 void SortByT(struct sensor info[],int n);

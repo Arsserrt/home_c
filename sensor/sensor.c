@@ -61,34 +61,30 @@ int main(int argc, char *argv[])
 //получение данных из файла
     //sizeInput = AddInfoFromFile(info, sizeInput, filename);    
     sizeInput = AddInfoFromFileInStack(&p,filename);
-    printf("size %d p=%d\n",sizeInput,p);
-    //print(info, sizeInput);
-    printStack(p);
-    
-//место проб и ошибок
-    //SortByT(info, sizeInput); 
-    //SortByDate(info, sizeInput);    
-    //print(info, sizeInput);
+    //printf("size %d p=%d\n",sizeInput,p);
+    //printStack(p);
+    //cleanStack(&p);
+    //printStackDel(&p);
+    //printStack(p);
 
-/*
+
 //основной вывод статистики
     if(!monthFlag)
     {
         printf("___________________________________________\n");
-        YearStats(info,YEARSTAT);
+        YearStats(p,YEARSTAT);
         printf("___________________________________________\n");
-        printf("MediumTemp year %04d = %f\n", YEARSTAT, AverYearTemp(info,YEARSTAT));
-        printf("Min temp in year %04d = %d \n", YEARSTAT, MinYearTemp(info,YEARSTAT));
-        printf("Max temp in year %04d = %d \n", YEARSTAT, MaxYearTemp(info,YEARSTAT));
+        printf("MediumTemp year %04d = %f\n", YEARSTAT, AverYearTemp(p,YEARSTAT));
+        printf("Min temp in year %04d = %d \n", YEARSTAT, MinYearTemp(p,YEARSTAT));
+        printf("Max temp in year %04d = %d \n", YEARSTAT, MaxYearTemp(p,YEARSTAT));
         printf("___________________________________________\n");
     }
     else
     {
         printf("___________________________________________\n");
-        MonthStats(info, month, YEARSTAT);
+        MonthStats(p, month, YEARSTAT);
         printf("___________________________________________\n");
     }
-
-*/
+    cleanStack(&p);
     return 0;
 }

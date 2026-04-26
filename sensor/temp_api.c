@@ -18,7 +18,7 @@ struct sensor
 };
 */
 
-// функции дял таботы со stack
+// функции для работы со stack
 // добавление в stack
 void push(stack **p, sensor data)
 {
@@ -98,15 +98,49 @@ int AddInfoFromFileInStack(stack **p, const char *filename)
     return line_number-1;
 }
 
-// печать stack 
-void printStack(stack *p)
+// печать stack с удалением 
+void printStackDel(stack **p)
 {
     sensor info;
     printf("------------------------------------------------\n");
     //printf("p=%d",p);
-    while(p != NULL)
+    while(*p != NULL)
     {
-        info = pop(&p);
+        info = pop(p);
+        printf("%04u-%02u-%02u %02u:%02u t=%3d\n",
+               info.year,
+               info.month,
+               info.day,
+               info.hour,
+               info.minute,
+               info.t);
+    }
+    printf("------------------------------------------------\n");
+}
+
+// очистка stack 
+void cleanStack(stack **p)
+{
+    //printf("\n----------------clean stack---------------------\n");
+    while(*p != NULL)
+    {
+        pop(p);
+    }
+    //printf("------------------------------------------------\n");
+    printf("                stack clear                     \n");
+    //printf("------------------------------------------------\n");
+}
+
+// печать stack без удаления 
+void printStack(stack *p)
+{
+    sensor info;
+    stack *current = p;
+    printf("------------------------------------------------\n");
+    while (current != NULL)
+    {
+        info = current->value;
+        current = current->next;
         printf("%04u-%02u-%02u %02u:%02u t=%3d\n",
                info.year,
                info.month,
@@ -149,126 +183,144 @@ void print_1str(struct sensor info)
     printf("------------------------\n");
 }
 
-// функция среднемесячная температура
-float AverMonthTemp(struct sensor info[], int month, int year)
+// функция среднемесячная температура+
+float AverMonthTemp(stack *p, int month, int year)
 {
+    sensor info;
+    stack *current = p;
     int count = 0, summ = 0;
-    for (int i = 0; i < SIZE; i++)
+    while (current != NULL)
     {
-        if (info[i].year == year && info[i].month == month)
+        info = current->value;
+        current = current->next;
+        if (info.year == year && info.month == month)
         {
-            summ += info[i].t;
+            summ += info.t;
             count++;
         }
     }
     return count != 0 ? (float)summ / count : 99;
 }
 
-// функция минимальной температуры в текущем месяце
-int MinMonthTemp(struct sensor info[], int month, int year)
+// функция минимальной температуры в текущем месяце+
+int MinMonthTemp(stack *p, int month, int year)
 {
-    struct sensor temp;
-    //    struct sensor temp;
-    //    struct sensor *t = &temp;
+    sensor temp, info;
+    stack *current = p;
     AddRecord_1str(&temp, 0, 0, 0, 0, 0, 63);
-    for (int i = 0; i < SIZE; i++)
+    while (current != NULL)
     {
-        if (info[i].year == year && info[i].month == month)
+        info = current->value;
+        current = current->next;
+        if (info.year == year && info.month == month)
         {
-            if (info[i].t < temp.t)
-                temp = info[i];
+            if (info.t < temp.t)
+                temp = info;
         }
     }
     return temp.year ? temp.t : 99;
 }
 
-// функция максимальной температуры в текущем месяце
-int MaxMonthTemp(struct sensor info[], int month, int year)
+// функция максимальной температуры в текущем месяце+
+int MaxMonthTemp(stack *p, int month, int year)
 {
-    struct sensor temp;
-    //    struct sensor *t = &temp;
+    sensor temp, info;
+    stack *current = p;
     AddRecord_1str(&temp, 0, 0, 0, 0, 0, -63);
-    for (int i = 0; i < SIZE; i++)
+    while (current != NULL)
     {
-        if (info[i].year == year && info[i].month == month)
+        info = current->value;
+        current = current->next;
+        if (info.year == year && info.month == month)
         {
-            if (info[i].t > temp.t)
-                temp = info[i];
+            if (info.t > temp.t)
+                temp = info;
         }
     }
     return temp.year ? temp.t : 99;
 }
 
-// функция годовая статистика
-void YearStats(struct sensor info[], int year)
+// функция статистики одного месяца+
+void MonthStats(stack *p, int month, int year)
+{
+    printf("Temp in year %4u in month %2u\n", year, month);
+    printf("%3.2f ", AverMonthTemp(p, month, year));
+    printf("  %3d ", MinMonthTemp(p, month, year));
+    printf("  %3d \n", MaxMonthTemp(p, month, year));
+}
+
+// функция годовая статистика+
+void YearStats(stack *p, int year)
 {
     printf("Temp in year %4u\n", year);
     printf("mounth medium   min   max   \n");
     for (int i = 1; i <= 12; i++)
     {
         printf("%2d     ", i);
-        printf("%3.2f ", AverMonthTemp(info, i, year));
-        printf("  %3d ", MinMonthTemp(info, i, year));
-        printf("  %3d \n", MaxMonthTemp(info, i, year));
+        printf("%3.2f ", AverMonthTemp(p, i, year));
+        printf("  %3d ", MinMonthTemp(p, i, year));
+        printf("  %3d \n", MaxMonthTemp(p, i, year));
     }
 }
 
-// функция статистики одного месяца
-void MonthStats(struct sensor info[], int month, int year)
+// функция среднегодовая температура+
+float AverYearTemp(stack *p, int year)
 {
-    printf("Temp in year %4u in month %2u\n", year, month);
-    printf("%3.2f ", AverMonthTemp(info, month, year));
-    printf("  %3d ", MinMonthTemp(info, month, year));
-    printf("  %3d \n", MaxMonthTemp(info, month, year));
-}
-
-// функция среднегодовая температура
-float AverYearTemp(struct sensor info[], int year)
-{
+    sensor temp, info;
+    stack *current = p;
     int count = 0, summ = 0;
-    for (int i = 0; i < SIZE; i++)
+    while (current != NULL)
     {
-        if (info[i].year == year)
+        info = current->value;
+        current = current->next;
+        if (info.year == year)
         {
-            summ += info[i].t;
+            summ += info.t;
             count++;
         }
     }
     return count != 0 ? (float)summ / count : 99;
 }
 
-// функция минимальная температура за год
-int MinYearTemp(struct sensor info[], int year)
+// функция минимальная температура за год+
+int MinYearTemp(stack *p, int year)
 {
-    struct sensor temp;
+    sensor temp, info;
+    stack *current = p;
     AddRecord_1str(&temp, 0, 0, 0, 0, 0, 63);
-    for (int i = 0; i < SIZE; i++)
+    while (current != NULL)
     {
-        if (info[i].year == year)
+        info = current->value;
+        current = current->next;
+        if (info.year == year)
         {
-            if (info[i].t < temp.t)
-                temp = info[i];
+            if (info.t < temp.t)
+                temp = info;
         }
     }
     return temp.year ? temp.t : 99;
 }
 
-// функция максимальная температура за год
-int MaxYearTemp(struct sensor info[], int year)
+// функция максимальная температура за год+
+int MaxYearTemp(stack *p, int year)
 {
-    struct sensor temp;
+    sensor temp, info;
+    stack *current = p;
     AddRecord_1str(&temp, 0, 0, 0, 0, 0, -63);
-    for (int i = 0; i < SIZE; i++)
+    while (current != NULL)
     {
-        if (info[i].year == year)
+        info = current->value;
+        current = current->next;
+        if (info.year == year)
         {
-            if (info[i].t > temp.t)
-                temp = info[i];
+            if (info.t > temp.t)
+                temp = info;
         }
     }
     return temp.year ? temp.t : 99;
 }
 
+//ненужные сортировки для ДЗ
 // замена
 void changeIJ(struct sensor info[], int i, int j)
 {
